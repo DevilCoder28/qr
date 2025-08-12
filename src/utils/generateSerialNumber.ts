@@ -1,0 +1,7 @@
+export const generateRandomSerialNumber = (): string => {
+  let digits = '';
+  for (let i = 0; i < 10; i++) {
+    digits += Math.floor(Math.random() * 10);
+  }
+  return `DIGI${digits}`;
+};

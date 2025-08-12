@@ -1,0 +1,28 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.qrFlowRoute = void 0;
+const express_1 = __importDefault(require("express"));
+const jwtAuthenticationMiddleware_1 = require("../../middlewares/jwtAuthenticationMiddleware");
+const enums_1 = require("../../enums/enums");
+const multerConfig_1 = require("../../config/multerConfig");
+const createNewQRTypeController_1 = require("../../controllers/qr-flow/createNewQRTypeController");
+const qrController_1 = require("../../controllers/qr-flow/qrController");
+const paymentRoute_1 = require("./payment/paymentRoute");
+const activateQRController_1 = require("../../controllers/qr-flow/activateQRController");
+const qrScanController_1 = require("../../controllers/qr-flow/qrScanController");
+const mailQRTemplateController_1 = require("../../controllers/qr-flow/mailQRTemplateController");
+const generateQRPDF_1 = require("../../helpers/generateQRPDF");
+const qrQuestionsController_1 = require("../../controllers/qr-flow/qrQuestionsController");
+exports.qrFlowRoute = express_1.default.Router();
+exports.qrFlowRoute.post('/create-new-type', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), multerConfig_1.upload.any(), createNewQRTypeController_1.createNewQRType);
+exports.qrFlowRoute.post('/fetch-types', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), qrController_1.fetchTypesOfQRBasedOnDelivery);
+exports.qrFlowRoute.post('/check-validity', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), activateQRController_1.checkQRValidity);
+exports.qrFlowRoute.post('/update-qr', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), activateQRController_1.updateQRBySerialNumberHandler);
+exports.qrFlowRoute.get('/scan/:qrId', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), qrScanController_1.scanQrHandler);
+exports.qrFlowRoute.post('/send-qr-pdf', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), mailQRTemplateController_1.mailQRTemplate);
+exports.qrFlowRoute.post('/upload', generateQRPDF_1.uploadLocalPDF);
+exports.qrFlowRoute.post('/get-questions', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), qrQuestionsController_1.getQRTypeQuestions);
+exports.qrFlowRoute.use('/payment', paymentRoute_1.paymentRoute);

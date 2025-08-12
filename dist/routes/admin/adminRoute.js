@@ -1,0 +1,23 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.adminRoute = void 0;
+const express_1 = __importDefault(require("express"));
+const adminController_1 = require("../../controllers/admin/analytics/adminController");
+const enums_1 = require("../../enums/enums");
+const jwtAuthenticationMiddleware_1 = require("../../middlewares/jwtAuthenticationMiddleware");
+const orderManagementController_1 = require("../../controllers/admin/orders/orderManagementController");
+const customerManagementController_1 = require("../../controllers/admin/customer-mgmt/customerManagementController");
+exports.adminRoute = express_1.default.Router();
+exports.adminRoute.get('/analytics', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.ADMIN]), adminController_1.adminAnalytics);
+exports.adminRoute.post('/ranged-revenue', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.ADMIN]), adminController_1.rangedRevenue);
+exports.adminRoute.post('/weekly-revenue', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.ADMIN]), adminController_1.weeklyRevenueTrend);
+exports.adminRoute.post('/monthly-revenue', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.ADMIN]), adminController_1.monthlyRevenueTrend);
+exports.adminRoute.post('/orders', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.ADMIN]), orderManagementController_1.getAllOrderInformation);
+exports.adminRoute.put('/update-order', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.ADMIN]), orderManagementController_1.updateOrderInformation);
+exports.adminRoute.post('/get-users', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.ADMIN]), customerManagementController_1.getCustomerData);
+exports.adminRoute.post('/get-more-data', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.ADMIN]), customerManagementController_1.viewMoreCustomerData);
+exports.adminRoute.put('/update-user-info', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.ADMIN]), customerManagementController_1.updateCustomerData);
+exports.adminRoute.put('/update-qr-info', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.ADMIN]), customerManagementController_1.updateViewMoreData);

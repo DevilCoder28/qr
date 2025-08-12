@@ -1,0 +1,22 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.authRoute = void 0;
+const express_1 = __importDefault(require("express"));
+const authController_1 = require("../../controllers/auth/authController");
+const jwtAuthenticationMiddleware_1 = require("../../middlewares/jwtAuthenticationMiddleware");
+const enums_1 = require("../../enums/enums");
+const multerConfig_1 = require("../../config/multerConfig");
+exports.authRoute = express_1.default.Router();
+exports.authRoute.post('/signup', authController_1.signUp);
+exports.authRoute.post('/login', authController_1.login);
+exports.authRoute.get('/verify-email', authController_1.verifyEmail);
+exports.authRoute.post('/resend-verification', authController_1.resendVerificationLink);
+exports.authRoute.post('/forgot-password', authController_1.forgotPassword);
+exports.authRoute.post('/reset-password', authController_1.resetPassword);
+exports.authRoute.get('/logout', jwtAuthenticationMiddleware_1.authenticate, authController_1.logout);
+exports.authRoute.get('/referral-link', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), authController_1.generateReferralLink);
+exports.authRoute.get('/profile', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), authController_1.getUserFromUserId);
+exports.authRoute.put('/profile', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), multerConfig_1.upload.single('avatar'), authController_1.updateUserProfile);

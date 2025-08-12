@@ -1,0 +1,77 @@
+{
+  "name": "pehchankaro-be",
+  "version": "1.0.0",
+  "description": "A project built for Swifty9 by StageOverStash team.",
+  "main": "./index.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon",
+    "prestart": "npm run build",
+    "format": "prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/stageoverstash/pehchankaro-be.git"
+  },
+  "keywords": [
+    "QR",
+    "express",
+    "typescript"
+  ],
+  "author": "StageOverStash",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stageoverstash/pehchankaro-be/issues"
+  },
+  "homepage": "https://github.com/stageoverstash/pehchankaro-be#readme",
+  "dependencies": {
+    "-": "^0.0.1",
+    "@edgestore/server": "^0.5.2",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "axios": "^1.9.0",
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^2.6.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.5.0",
+    "eslint": "^9.26.0",
+    "express": "^5.1.0",
+    "express-async-handler": "^1.2.0",
+    "handlebars": "^4.7.8",
+    "hashids": "^2.3.0",
+    "html-to-text": "^9.0.5",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.14.2",
+    "multer": "^2.0.0",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.3",
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.4",
+    "save-dev": "^0.0.1-security",
+    "twilio": "^5.7.1",
+    "uuid": "^11.1.0",
+    "winston": "^3.17.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.1",
+    "@types/html-to-text": "^9.0.4",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.15.17",
+    "@types/nodemailer": "^6.4.17",
+    "@types/qrcode": "^1.5.5",
+    "@types/uuid": "^10.0.0",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.5.3",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
