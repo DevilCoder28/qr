@@ -39,6 +39,10 @@ export const scanQrHandler = expressAsyncHandler(
       qrTypeId: qr.qrTypeId,
       visibleData,
       qrStatus: qr.qrStatus,
+      customerName: qr.customerName || null,
+      altMobileNumber: qr.altMobileNumber || null,
+      email: qr.email || null,
+      mobileNumber: qr.mobileNumber || null,
       createdByAvatar: qr.createdBy || null,
     });
   }
