@@ -42,6 +42,7 @@ export const scanQrHandler = expressAsyncHandler(
       customerName: qr.customerName || null,
       altMobileNumber: qr.altMobileNumber || null,
       email: qr.email || null,
+      vehicleNumber: qr.vehicleNumber || null,
       mobileNumber: qr.mobileNumber || null,
       createdByAvatar: qr.createdBy || null,
     });
