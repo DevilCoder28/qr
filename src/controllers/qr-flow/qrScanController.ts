@@ -3,6 +3,7 @@ import expressAsyncHandler from 'express-async-handler';
 import { QRModel } from '../../models/qr-flow/qrModel';
 import { ApiResponse } from '../../config/ApiResponse';
 import { QRStatus } from '../../config/constants';
+import { text } from 'stream/consumers';
 
 export const scanQrHandler = expressAsyncHandler(
   async (req: Request, res: Response) => {
@@ -44,6 +45,9 @@ export const scanQrHandler = expressAsyncHandler(
       email: qr.email || null,
       vehicleNumber: qr.vehicleNumber || null,
       mobileNumber: qr.mobileNumber || null,
+      textMessagesAllowed: qr.textMessagesAllowed || false,
+      voiceCallsAllowed: qr.voiceCallsAllowed || false,
+      videoCallsAllowed: qr.videoCallsAllowed || false,
       createdByAvatar: qr.createdBy || null,
     });
   }
