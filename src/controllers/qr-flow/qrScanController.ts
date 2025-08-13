@@ -9,34 +9,37 @@ export const scanQrHandler = expressAsyncHandler(
     const { qrId } = req.params;
 
     const qr = await QRModel.findById(qrId)
-    .populate({
-      path: 'createdBy',
-      select: 'avatar'      // Only fetch the 'avatar' field from the User document
-    })
-    .lean();   
-
+      .populate({
+        path: 'createdBy',
+        select: 'avatar', // Only fetch the 'avatar' field
+      })
+      .lean();
 
     if (!qr) {
       return ApiResponse(res, 404, 'QR Code not found', false, null);
     }
 
     if (qr.qrStatus !== QRStatus.ACTIVE) {
-      return ApiResponse(res, 403, 'QR Code is not active', false, null);
+      // When inactive → send 403 but still return serialNumber and qrId
+      return ApiResponse(res, 403, 'QR Code is not active', false, {
+        _id: qr._id,
+        serialNumber: qr.serialNumber,
+        qrStatus: qr.qrStatus,
+        createdByAvatar: qr.createdBy || null,
+      });
     }
 
+    // For active QRs → return only visible fields
     const visibleFields = qr.visibleInfoFields || [];
-
     const visibleData = Object.fromEntries(
       Object.entries(qr).filter(([key]) => visibleFields.includes(key)),
     );
 
-    // console.log("Visible Data : ", visibleData);
-
     return ApiResponse(res, 200, 'QR scanned successfully', true, {
-      qrTypeId : qr.qrTypeId, 
+      qrTypeId: qr.qrTypeId,
       visibleData,
       qrStatus: qr.qrStatus,
       createdByAvatar: qr.createdBy || null,
     });
-  },
+  }
 );
