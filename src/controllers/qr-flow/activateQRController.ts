@@ -25,7 +25,6 @@ export const checkQRValidity = expressAsyncHandler(
 
     if (QR.qrStatus === QRStatus.INACTIVE)
       return ApiResponse(res, 200, 'The QR is not yet activated.', true, {
-        serialNumber: QR.serialNumber,
         qrStatus: QR.qrStatus,
       });
 
