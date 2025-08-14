@@ -3,7 +3,8 @@ import expressAsyncHandler from 'express-async-handler';
 import { QRModel } from '../../models/qr-flow/qrModel';
 import { ApiResponse } from '../../config/ApiResponse';
 import { QRStatus } from '../../config/constants';
-import { text } from 'stream/consumers';
+import { User } from '../../models/auth/user';
+import { push } from '../../config/push';
 
 export const scanQrHandler = expressAsyncHandler(
   async (req: Request, res: Response) => {
@@ -18,6 +19,35 @@ export const scanQrHandler = expressAsyncHandler(
 
     if (!qr) {
       return ApiResponse(res, 404, 'QR Code not found', false, null);
+    }
+
+    // Best-effort: notify owner via FCM regardless of status
+    try {
+      const ownerId =
+        (qr as any).createdFor?.toString?.() ||
+        (qr as any).createdFor?._id?.toString?.();
+
+      if (ownerId) {
+        const owner = await User.findById(ownerId)
+          .select('deviceTokens')
+          .lean();
+        const tokens = owner?.deviceTokens || [];
+
+        if (tokens.length) {
+          await push.notifyMany(
+            tokens,
+            'QR scanned',
+            `Your QR ${qr.serialNumber || ''} was scanned`,
+            {
+              qrId: String((qr as any)._id),
+              serialNumber: qr.serialNumber || '',
+              qrStatus: qr.qrStatus || '',
+            },
+          );
+        }
+      }
+    } catch {
+      // Do not block scan response on push errors
     }
 
     if (qr.qrStatus !== QRStatus.ACTIVE) {

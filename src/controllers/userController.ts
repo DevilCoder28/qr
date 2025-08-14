@@ -26,3 +26,42 @@ export const userProfile = expressAsyncHandler(
     });
   },
 );
+
+export const registerDeviceToken = expressAsyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.data?.userId;
+    const { token } = req.body as { token?: string };
+
+    if (!userId || !token) {
+      return ApiResponse(res, 400, 'Missing token', false);
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return ApiResponse(res, 404, 'User not found', false);
+
+    const set = new Set([...(user.deviceTokens || []), token]);
+    // Optionally limit stored tokens per user
+    user.deviceTokens = Array.from(set).slice(-5);
+
+    await user.save();
+    return ApiResponse(res, 200, 'Device registered', true, null);
+  }
+);
+
+export const unregisterDeviceToken = expressAsyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.data?.userId;
+    const { token } = req.body as { token?: string };
+
+    if (!userId || !token) {
+      return ApiResponse(res, 400, 'Missing token', false);
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return ApiResponse(res, 404, 'User not found', false);
+
+    user.deviceTokens = (user.deviceTokens || []).filter((t) => t !== token);
+    await user.save();
+    return ApiResponse(res, 200, 'Device unregistered', true, null);
+  }
+);

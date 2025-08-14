@@ -1,7 +1,7 @@
-import { UserRoles } from '../enums/enums';
+import { UserRoles } from "../enums/enums";
 
 export interface IUser {
-  avatar? : string;
+  avatar?: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -10,6 +10,7 @@ export interface IUser {
   altMobileNumber?: string;
   vehicleNumber?: string;
   vehicleType?: string;
+  deviceTokens?: string[];
   about?: string;
   roles: UserRoles[];
   isVerified: boolean;
@@ -17,6 +18,6 @@ export interface IUser {
   verificationTokenExpiry?: Date;
   resetPasswordToken?: string;
   resetPasswordTokenExpiry?: Date;
-  digitalWalletCoins? : Number;
-  totalNumberOfQRsGenerated? : Number
+  digitalWalletCoins?: Number;
+  totalNumberOfQRsGenerated?: Number;
 }

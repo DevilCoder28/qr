@@ -71,6 +71,10 @@ const userSchema = new Schema<IUserDocument>(
     digitalWalletCoins : {
       type : Number,
       default : 0
+    },
+    deviceTokens: {
+      type: [String],
+      default: []
     }
   },
   {
