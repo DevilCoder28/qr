@@ -478,6 +478,7 @@ export const getUserFromUserId = expressAsyncHandler(
     }));
 
     const response = {
+      userId:userId,
       firstName: user.firstName,
       lastName: user.lastName,
       avatar: user.avatar || null,

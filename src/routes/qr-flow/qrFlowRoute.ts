@@ -17,6 +17,7 @@ import { scanQrHandler } from '../../controllers/qr-flow/qrScanController';
 import { mailQRTemplate } from '../../controllers/qr-flow/mailQRTemplateController';
 import { uploadLocalPDF } from '../../helpers/generateQRPDF';
 import { getQRTypeQuestions } from '../../controllers/qr-flow/qrQuestionsController';
+import { fetchGeneratedQRsByUser } from '../../controllers/qr-flow/qrController';
 
 export const qrFlowRoute = express.Router();
 
@@ -70,6 +71,12 @@ qrFlowRoute.post(
   authenticate,
   authorize([UserRoles.BASIC_USER]),
   getQRTypeQuestions,
+);
+qrFlowRoute.get(
+  '/fetch-generated-qrs',
+  authenticate,
+  authorize([UserRoles.BASIC_USER]),
+  fetchGeneratedQRsByUser,
 );
 
 qrFlowRoute.use('/payment', paymentRoute);

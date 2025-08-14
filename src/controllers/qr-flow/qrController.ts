@@ -3,6 +3,43 @@ import { AuthenticatedRequest } from '../../types/AuthenticatedRequest';
 import { Response } from 'express';
 import { QRMetaData } from '../../models/qr-flow/newQRTypeModel';
 import { ApiResponse } from '../../config/ApiResponse';
+import { QRModel } from '../../models/qr-flow/qrModel';
+
+export const fetchGeneratedQRsByUser = expressAsyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const { userId, createdFor } = req.query;
+
+    if (!userId || !createdFor) {
+      return ApiResponse(
+        res,
+        400,
+        'Both userId and createdFor are required',
+        false,
+        null,
+      );
+    }
+
+    try {
+      const qrs = await QRModel.find({
+        createdBy: userId,
+        createdFor: createdFor,
+      }).select(
+        '_id serialNumber qrTypeId qrStatus qrUrl createdBy createdFor',
+      );
+
+      return ApiResponse(
+        res,
+        200,
+        'Generated QRs fetched successfully',
+        true,
+        qrs,
+      );
+    } catch (error) {
+      console.error('Error fetching generated QRs:', error);
+      return ApiResponse(res, 500, 'Failed to fetch QRs', false, null);
+    }
+  },
+);
 
 export const fetchTypesOfQRBasedOnDelivery = expressAsyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
