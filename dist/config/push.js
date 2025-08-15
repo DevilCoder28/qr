@@ -15,11 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.push = void 0;
 const firebase_admin_1 = __importDefault(require("firebase-admin"));
 function initAdmin() {
+    var _a;
     if (firebase_admin_1.default.apps.length)
         return;
     if (!process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
         throw new Error("FIREBASE_SERVICE_ACCOUNT_BASE64 is missing");
     }
+    console.log("FIREBASE_SERVICE_ACCOUNT_BASE64 length:", (_a = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) === null || _a === void 0 ? void 0 : _a.length);
     const serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, "base64").toString("utf-8"));
     firebase_admin_1.default.initializeApp({
         credential: firebase_admin_1.default.credential.cert(serviceAccount),
