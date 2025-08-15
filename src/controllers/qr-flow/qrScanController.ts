@@ -6,22 +6,22 @@ import { QRStatus } from '../../config/constants';
 import { User } from '../../models/auth/user';
 import { push } from '../../config/push';
 
+/**
+ * Handler for scanning a QR code
+ * Sends notification to the QR owner with scan location
+ */
 export const scanQrHandler = expressAsyncHandler(
   async (req: Request, res: Response) => {
     const { qrId } = req.params;
-    const { latitude, longitude } = req.query;
-// <-- new
+    const latitude = parseFloat(req.query.latitude as string) || null;
+    const longitude = parseFloat(req.query.longitude as string) || null;
 
+    // Fetch QR info
     const qr = await QRModel.findById(qrId)
-      .populate({
-        path: 'createdBy',
-        select: 'avatar', 
-      })
+      .populate({ path: 'createdBy', select: 'avatar' })
       .lean();
 
-    if (!qr) {
-      return ApiResponse(res, 404, 'QR Code not found', false, null);
-    }
+    if (!qr) return ApiResponse(res, 404, 'QR Code not found', false, null);
 
     let notificationSent = false;
 
@@ -31,16 +31,14 @@ export const scanQrHandler = expressAsyncHandler(
         (qr as any).createdFor?._id?.toString?.();
 
       if (ownerId) {
-        const owner = await User.findById(ownerId)
-          .select('deviceTokens')
-          .lean();
+        const owner = await User.findById(ownerId).select('deviceTokens').lean();
         const tokens = owner?.deviceTokens || [];
 
         if (tokens.length) {
           await push.notifyMany(
             tokens,
             'QR scanned',
-            `Your QR ${qr.serialNumber || ''} was scanned at ${latitude}, ${longitude}`, // include location in message
+            `Your QR ${qr.serialNumber || ''} was scanned at ${latitude}, ${longitude}`,
             {
               qrId: String((qr as any)._id),
               serialNumber: qr.serialNumber || '',
@@ -48,13 +46,13 @@ export const scanQrHandler = expressAsyncHandler(
               vehicleNumber: qr.vehicleNumber || '',
               latitude: latitude?.toString() || '',
               longitude: longitude?.toString() || '',
-            },
+            }
           );
           notificationSent = true;
         }
       }
     } catch (err) {
-      console.error("Push notification error:", err);
+      console.error('Push notification error:', err);
       notificationSent = false;
     }
 
@@ -70,7 +68,7 @@ export const scanQrHandler = expressAsyncHandler(
 
     const visibleFields = qr.visibleInfoFields || [];
     const visibleData = Object.fromEntries(
-      Object.entries(qr).filter(([key]) => visibleFields.includes(key)),
+      Object.entries(qr).filter(([key]) => visibleFields.includes(key))
     );
 
     return ApiResponse(res, 200, 'QR scanned successfully', true, {
@@ -87,8 +85,56 @@ export const scanQrHandler = expressAsyncHandler(
       videoCallsAllowed: qr.videoCallsAllowed || false,
       createdByAvatar: qr.createdBy || null,
       notificationSent,
-      latitude: latitude || null, // optional in response
-      longitude: longitude || null,
+      latitude,
+      longitude,
     });
+  }
+);
+
+/**
+ * Handler to initiate a video call
+ * Sends incoming call notification to driver with a unique roomId
+ */
+export const startCallHandler = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    const { qrId, userName } = req.body;
+
+    if (!qrId || !userName) {
+      return res.status(400).json({ message: 'qrId and userName are required' });
+    }
+
+    // Fetch QR info
+    const qr = await QRModel.findById(qrId)
+      .populate({ path: 'createdFor', select: 'deviceTokens' })
+      .lean();
+
+    if (!qr) return ApiResponse(res, 404, 'QR Code not found', false, null);
+
+    if (qr.qrStatus !== QRStatus.ACTIVE) {
+      return ApiResponse(res, 403, 'QR Code is not active', false, null);
+    }
+
+    const roomId = Math.random().toString(36).substring(2, 10); // generate random 8-char roomId
+    let notificationSent = false;
+
+    try {
+      const driver = qr.createdFor as any;
+      const tokens = driver?.deviceTokens || [];
+
+      if (tokens.length) {
+        await push.notifyMany(
+          tokens,
+          'Incoming Video Call',
+          `${userName} wants to video call`,
+          { roomId, userName }
+        );
+        notificationSent = true;
+      }
+    } catch (err) {
+      console.error('Push notification error:', err);
+      notificationSent = false;
+    }
+
+    return ApiResponse(res, 200, 'Call initiated', true, { roomId, notificationSent });
   }
 );

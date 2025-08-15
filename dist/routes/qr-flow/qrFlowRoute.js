@@ -17,12 +17,14 @@ const mailQRTemplateController_1 = require("../../controllers/qr-flow/mailQRTemp
 const generateQRPDF_1 = require("../../helpers/generateQRPDF");
 const qrQuestionsController_1 = require("../../controllers/qr-flow/qrQuestionsController");
 const qrController_2 = require("../../controllers/qr-flow/qrController");
+const qrScanController_2 = require("../../controllers/qr-flow/qrScanController");
 exports.qrFlowRoute = express_1.default.Router();
 exports.qrFlowRoute.post('/create-new-type', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), multerConfig_1.upload.any(), createNewQRTypeController_1.createNewQRType);
 exports.qrFlowRoute.post('/fetch-types', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), qrController_1.fetchTypesOfQRBasedOnDelivery);
 exports.qrFlowRoute.post('/check-validity', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), activateQRController_1.checkQRValidity);
 exports.qrFlowRoute.post('/update-qr', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), activateQRController_1.updateQRBySerialNumberHandler);
 exports.qrFlowRoute.get('/scan/:qrId', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), qrScanController_1.scanQrHandler);
+exports.qrFlowRoute.post('/start-call', qrScanController_2.startCallHandler);
 exports.qrFlowRoute.post('/send-qr-pdf', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), mailQRTemplateController_1.mailQRTemplate);
 exports.qrFlowRoute.post('/upload', generateQRPDF_1.uploadLocalPDF);
 exports.qrFlowRoute.post('/get-questions', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), qrQuestionsController_1.getQRTypeQuestions);

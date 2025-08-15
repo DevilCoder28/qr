@@ -18,6 +18,7 @@ import { mailQRTemplate } from '../../controllers/qr-flow/mailQRTemplateControll
 import { uploadLocalPDF } from '../../helpers/generateQRPDF';
 import { getQRTypeQuestions } from '../../controllers/qr-flow/qrQuestionsController';
 import { fetchGeneratedQRsByUser } from '../../controllers/qr-flow/qrController';
+import { startCallHandler } from '../../controllers/qr-flow/qrScanController';
 
 export const qrFlowRoute = express.Router();
 
@@ -56,7 +57,7 @@ qrFlowRoute.get(
   authorize([UserRoles.BASIC_USER]),
   scanQrHandler,
 );
-
+qrFlowRoute.post('/start-call', startCallHandler);
 qrFlowRoute.post(
   '/send-qr-pdf',
   authenticate,
