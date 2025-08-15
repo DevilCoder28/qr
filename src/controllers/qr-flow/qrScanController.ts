@@ -9,11 +9,13 @@ import { push } from '../../config/push';
 export const scanQrHandler = expressAsyncHandler(
   async (req: Request, res: Response) => {
     const { qrId } = req.params;
+    const { latitude, longitude } = req.query;
+// <-- new
 
     const qr = await QRModel.findById(qrId)
       .populate({
         path: 'createdBy',
-        select: 'avatar', // Only fetch the 'avatar' field
+        select: 'avatar', 
       })
       .lean();
 
@@ -21,10 +23,8 @@ export const scanQrHandler = expressAsyncHandler(
       return ApiResponse(res, 404, 'QR Code not found', false, null);
     }
 
-    // Flag for notification status
     let notificationSent = false;
 
-    // Best-effort: notify owner via FCM regardless of status
     try {
       const ownerId =
         (qr as any).createdFor?.toString?.() ||
@@ -35,23 +35,21 @@ export const scanQrHandler = expressAsyncHandler(
           .select('deviceTokens')
           .lean();
         const tokens = owner?.deviceTokens || [];
-        console.log("QR CreatedFor:", qr.createdFor);
-        console.log("OwnerId:", ownerId);
-        console.log("Tokens:", tokens);
 
         if (tokens.length) {
           await push.notifyMany(
             tokens,
             'QR scanned',
-            `Your QR ${qr.serialNumber || ''} was scanned`,
+            `Your QR ${qr.serialNumber || ''} was scanned at ${latitude}, ${longitude}`, // include location in message
             {
               qrId: String((qr as any)._id),
               serialNumber: qr.serialNumber || '',
               qrStatus: qr.qrStatus || '',
               vehicleNumber: qr.vehicleNumber || '',
+              latitude: latitude?.toString() || '',
+              longitude: longitude?.toString() || '',
             },
           );
-          console.log("Notification Sent");
           notificationSent = true;
         }
       }
@@ -61,7 +59,6 @@ export const scanQrHandler = expressAsyncHandler(
     }
 
     if (qr.qrStatus !== QRStatus.ACTIVE) {
-      // When inactive → send 403 but still return serialNumber and qrId
       return ApiResponse(res, 403, 'QR Code is not active', false, {
         _id: qr._id,
         serialNumber: qr.serialNumber,
@@ -71,7 +68,6 @@ export const scanQrHandler = expressAsyncHandler(
       });
     }
 
-    // For active QRs → return only visible fields
     const visibleFields = qr.visibleInfoFields || [];
     const visibleData = Object.fromEntries(
       Object.entries(qr).filter(([key]) => visibleFields.includes(key)),
@@ -91,6 +87,8 @@ export const scanQrHandler = expressAsyncHandler(
       videoCallsAllowed: qr.videoCallsAllowed || false,
       createdByAvatar: qr.createdBy || null,
       notificationSent,
+      latitude: latitude || null, // optional in response
+      longitude: longitude || null,
     });
   }
 );

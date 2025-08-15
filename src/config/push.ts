@@ -38,6 +38,7 @@ export const push = {
     const res = await admin.messaging().sendEachForMulticast({
       tokens,
       notification: { title, body },
+      
       data: payloadData, // send datetime in data
     });
 
