@@ -13,8 +13,11 @@ import { push } from '../../config/push';
 export const scanQrHandler = expressAsyncHandler(
   async (req: Request, res: Response) => {
     const { qrId } = req.params;
-    const latitude = parseFloat(req.query.latitude as string) || null;
-    const longitude = parseFloat(req.query.longitude as string) || null;
+    const { latitude, longitude } = req.body; // get from body
+
+    // Parse latitude and longitude as floats (if provided)
+    const lat = latitude !== undefined ? parseFloat(latitude) : null;
+    const long = longitude !== undefined ? parseFloat(longitude) : null;
 
     // Fetch QR info
     const qr = await QRModel.findById(qrId)
@@ -38,14 +41,14 @@ export const scanQrHandler = expressAsyncHandler(
           await push.notifyMany(
             tokens,
             'QR scanned',
-            `Your QR ${qr.serialNumber || ''} was scanned at ${latitude}, ${longitude}`,
+            `Your QR ${qr.serialNumber || ''} was scanned at ${lat}, ${long}`,
             {
               qrId: String((qr as any)._id),
               serialNumber: qr.serialNumber || '',
               qrStatus: qr.qrStatus || '',
               vehicleNumber: qr.vehicleNumber || '',
-              latitude: latitude?.toString() || '',
-              longitude: longitude?.toString() || '',
+              latitude: lat?.toString() || '',
+              longitude: long?.toString() || '',
             }
           );
           notificationSent = true;
@@ -85,11 +88,12 @@ export const scanQrHandler = expressAsyncHandler(
       videoCallsAllowed: qr.videoCallsAllowed || false,
       createdByAvatar: qr.createdBy || null,
       notificationSent,
-      latitude,
-      longitude,
+      latitude: lat,
+      longitude: long,
     });
   }
 );
+
 
 /**
  * Handler to initiate a video call
@@ -98,7 +102,7 @@ export const scanQrHandler = expressAsyncHandler(
 export const startCallHandler = expressAsyncHandler(
   async (req: Request, res: Response) => {
     const { qrId } = req.params;
-    const { userName, roomId: bodyRoomId } = req.body;
+    const { userName, roomId } = req.body;
 
     console.log("✅ /start-call hit", req.body);
 
@@ -120,8 +124,6 @@ export const startCallHandler = expressAsyncHandler(
       return ApiResponse(res, 403, 'QR Code is not active', false, null);
     }
 
-    // Use provided roomId or generate a new one
-    const roomId = bodyRoomId || uuidv4();
 
     let notificationSent = false;
 
