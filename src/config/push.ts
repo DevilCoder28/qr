@@ -1,17 +1,23 @@
 import admin from "firebase-admin";
-import path from "path";
 
 function initAdmin() {
   if (admin.apps.length) return;
 
-  var serviceAccount = require("../../serviceAccountKey.json");
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT_BASE64 is missing");
+  }
+
+  const serviceAccount = JSON.parse(
+    Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, "base64").toString("utf-8")
+  );
 
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount),
   });
 }
 
 initAdmin();
+
 
 export const push = {
   notifyMany: async (
