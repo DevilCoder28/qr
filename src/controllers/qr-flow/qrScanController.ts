@@ -21,6 +21,9 @@ export const scanQrHandler = expressAsyncHandler(
       return ApiResponse(res, 404, 'QR Code not found', false, null);
     }
 
+    // Flag for notification status
+    let notificationSent = false;
+
     // Best-effort: notify owner via FCM regardless of status
     try {
       const ownerId =
@@ -32,6 +35,9 @@ export const scanQrHandler = expressAsyncHandler(
           .select('deviceTokens')
           .lean();
         const tokens = owner?.deviceTokens || [];
+        console.log("QR CreatedFor:", qr.createdFor);
+        console.log("OwnerId:", ownerId);
+        console.log("Tokens:", tokens);
 
         if (tokens.length) {
           await push.notifyMany(
@@ -42,12 +48,16 @@ export const scanQrHandler = expressAsyncHandler(
               qrId: String((qr as any)._id),
               serialNumber: qr.serialNumber || '',
               qrStatus: qr.qrStatus || '',
+              vehicleNumber: qr.vehicleNumber || '',
             },
           );
+          console.log("Notification Sent");
+          notificationSent = true;
         }
       }
-    } catch {
-      // Do not block scan response on push errors
+    } catch (err) {
+      console.error("Push notification error:", err);
+      notificationSent = false;
     }
 
     if (qr.qrStatus !== QRStatus.ACTIVE) {
@@ -57,6 +67,7 @@ export const scanQrHandler = expressAsyncHandler(
         serialNumber: qr.serialNumber,
         qrStatus: qr.qrStatus,
         createdByAvatar: qr.createdBy || null,
+        notificationSent,
       });
     }
 
@@ -79,6 +90,7 @@ export const scanQrHandler = expressAsyncHandler(
       voiceCallsAllowed: qr.voiceCallsAllowed || false,
       videoCallsAllowed: qr.videoCallsAllowed || false,
       createdByAvatar: qr.createdBy || null,
+      notificationSent,
     });
   }
 );

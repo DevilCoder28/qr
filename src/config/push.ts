@@ -1,23 +1,16 @@
 import admin from "firebase-admin";
+import path from "path";
 
 function initAdmin() {
   if (admin.apps.length) return;
 
-  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-    });
-    return;
-  }
+  var serviceAccount = require("../../serviceAccountKey.json");
 
-  const b64 = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC3//cr9005NIbe\nXjnfVlvkzAd4Pd/edPUvfV1xGvYIrKSVwVMwgfxgqvGZsEMPZZhPPbx5PbTWFwOL\nPG52FdF0sUWLMUhWjkR6CrDV4hQhIXjj0Dxkol4ZMmhjGgtJdbVIFvv4qQzqGl31\npAGa2/JWxW/9XXokjmm2nQ8VnSvkxHssicJRJHrB0Io5V75iO7oMjnEe3Qhd0z0E\nNNgSARH5U/qFhaC6zU8uhDm853zyinEcwMp8tY1PQ5dyQ3VLpfDzGQy2EUI7WD/a\nCTwE17gNzFz1wP51ZU/dbQuM8XvpWTuw5uSw3nrMKMbBt7K2eZNFHv6JpSHHzB5Y\n/rFh2VcPAgMBAAECggEAAaRdmKLDvE8XZAJrSW6m5x7mR3upGM9XsC6Z2lSWeRgy\ny2DzaFBam3GC57NTkQDXaKE86iwHFb0a3SZsGLi7yJB2VrM2u+TFKN59e3DSE/j6\nuxmLPYFa3Ao+Iqh4g4kIyXTshGu9HUQdfC6UTgOgKnsfitFEcEJ4LLrGHd8Uj60P\nnBqb/a4kTfEuC0x5a369NWfJAEeVzbXC/idf+fi2e1AfQS8RVT9VQyuMu7g1lJa1\ntCkz9vaLHSK5zjR/aMCJbxxVznBT/BdaXhdGvStlQS9A/RV5o/KVwdK/RmWzjCdL\nEqvxqHP8rc+dtwuYNilbOxw2sqq+VE0lnjn/85JQdQKBgQDwZntMvzbK9sN3wOQI\nOfo/7flWqbDZW1NnXUNRCFhqm+ZkYbjPz2YpPaO4aD1aK3F5PABRV9ClxeT8NRxN\nseQNypAGw9GQup5xQ7ZnE3X50xVA60Os/JG8ZAFK0EulDUp/mhd1RppVdxItx0ZB\nPsHkTRrsmU2Sds9a1l7tx5nVewKBgQDD8I/ycNLOcaitgMKnbsehavcOp2mWHC2X\nHkroKJQUpaLovOjtwXW2BniN/ePnmBvxCxW1ArkGfMXfUmod2IBQtRedADZsQ1Ne\nmJffMap5GcFiR1HrSP8SAwkF3mjfamzA2u2A3fXS6Fq4E1u9MOQsgQVrTKN0o6kN\ngu4cSCAufQKBgHx24sGignDk/+Dhmm5z7g/pWt22r5xpfy4WCENNCdHwc4FnYvMc\n0yzo//n65kDoGzEEkrmKuLkLU3oM2WGUh5loVddazQacyGmmACsv1TYKRoe9BuXq\nQl4CfPTKEVAcKIUWN6z9Z+x14JCZCtO+9U4JabYzzQjWwJasRKvhWtE/AoGBAKHv\nJ9hTXDXYA3LZToZ37K7AK0zGGWJBCYCyPXAfUTq7Jac5sTwFvhXgxTN8mCUoNjeB\nVMBTbr0o05PclezyqCGLeOd9bH0PK1CrxiBk+KG7InLpxI8ytfOZ5JQgGwZB+31r\nsgvl5SsYcxlcjl4OkRUi0Gq8XP6h365V/hoLleU1AoGATkG9F8uXJhx1QkXkUhzc\nllf2l2WpW6bPxtH2Wi8kTj55hLuVNs12K7oViUyzZwfnupdscIoPepKK/HsNTgDB\n4+9ipA+S0QTDf6Ln7ptOLw4HQDc0uLWy4kZk7M/ivvlucQmdoycC+8QWLGst417C\n6KWQxkIDuSFJKs12ibAxqKU=\n-----END PRIVATE KEY-----\n";
-  if (!b64) throw new Error("Missing Firebase credentials");
-  const json = Buffer.from(b64, "base64").toString("utf-8");
-  const svc = JSON.parse(json);
   admin.initializeApp({
-    credential: admin.credential.cert(svc),
+    credential: admin.credential.cert(serviceAccount)
   });
 }
+
 initAdmin();
 
 export const push = {
@@ -28,11 +21,33 @@ export const push = {
     data?: Record<string, string>
   ) => {
     if (!tokens?.length) return;
+
+    // Add datetime to the data payload
+    const payloadData = {
+      ...data,
+      timestamp: new Date().toISOString(), // ISO8601 timestamp
+    };
+
     const res = await admin.messaging().sendEachForMulticast({
       tokens,
       notification: { title, body },
-      data: data || {},
+      data: payloadData, // send datetime in data
     });
+
+    console.log('FCM result:', {
+      successCount: res.successCount,
+      failureCount: res.failureCount,
+    });
+
+    // log per token error and remove invalid tokens
+    const failedTokens: string[] = [];
+    res.responses.forEach((r, i) => {
+      if (!r.success) {
+        console.error('FCM error for token:', tokens[i], r.error);
+        failedTokens.push(tokens[i]);
+      }
+    });
+
     return res;
   },
 };
