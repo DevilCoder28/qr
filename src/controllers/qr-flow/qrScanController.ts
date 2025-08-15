@@ -97,8 +97,12 @@ export const scanQrHandler = expressAsyncHandler(
  */
 export const startCallHandler = expressAsyncHandler(
   async (req: Request, res: Response) => {
-    const { qrId, userName } = req.body;
+    const { qrId } = req.params;
+    const { userName, roomId: bodyRoomId } = req.body;
 
+    console.log("✅ /start-call hit", req.body);
+
+    // Validate required fields
     if (!qrId || !userName) {
       return res.status(400).json({ message: 'qrId and userName are required' });
     }
@@ -108,20 +112,24 @@ export const startCallHandler = expressAsyncHandler(
       .populate({ path: 'createdFor', select: 'deviceTokens' })
       .lean();
 
-    if (!qr) return ApiResponse(res, 404, 'QR Code not found', false, null);
+    if (!qr) {
+      return ApiResponse(res, 404, 'QR Code not found', false, null);
+    }
 
     if (qr.qrStatus !== QRStatus.ACTIVE) {
       return ApiResponse(res, 403, 'QR Code is not active', false, null);
     }
 
-    const roomId = Math.random().toString(36).substring(2, 10); // generate random 8-char roomId
+    // Use provided roomId or generate a new one
+    const roomId = bodyRoomId || uuidv4();
+
     let notificationSent = false;
 
     try {
       const driver = qr.createdFor as any;
       const tokens = driver?.deviceTokens || [];
 
-      if (tokens.length) {
+      if (tokens.length > 0) {
         await push.notifyMany(
           tokens,
           'Incoming Video Call',

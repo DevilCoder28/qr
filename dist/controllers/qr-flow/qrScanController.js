@@ -92,9 +92,12 @@ exports.scanQrHandler = (0, express_async_handler_1.default)((req, res) => __awa
  * Sends incoming call notification to driver with a unique roomId
  */
 exports.startCallHandler = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { qrId, userName } = req.body;
-    if (!qrId || !userName) {
-        return res.status(400).json({ message: 'qrId and userName are required' });
+    const { qrId } = req.params;
+    const { userName, roomId } = req.body;
+    console.log("✅ /start-call hit", req.body);
+    // Validate required fields 
+    if (!qrId || !userName || !roomId) {
+        return res.status(400).json({ message: 'qrId, userName, and roomId are required' });
     }
     // Fetch QR info
     const qr = yield qrModel_1.QRModel.findById(qrId)
@@ -105,7 +108,6 @@ exports.startCallHandler = (0, express_async_handler_1.default)((req, res) => __
     if (qr.qrStatus !== constants_1.QRStatus.ACTIVE) {
         return (0, ApiResponse_1.ApiResponse)(res, 403, 'QR Code is not active', false, null);
     }
-    const roomId = Math.random().toString(36).substring(2, 10); // generate random 8-char roomId
     let notificationSent = false;
     try {
         const driver = qr.createdFor;
