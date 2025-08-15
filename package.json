@@ -2,12 +2,11 @@
   "name": "pehchankaro-be",
   "version": "1.0.0",
   "description": "A project built for Swifty9 by StageOverStash team.",
-  "main": "./index.ts",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "NODE_OPTIONS=--max-old-space-size=1024 tsc",
+    "build": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon",
-    "prestart": "npm run build",
     "format": "prettier --write ."
   },
   "repository": {

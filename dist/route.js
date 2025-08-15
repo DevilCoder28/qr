@@ -16,4 +16,5 @@ exports.apiRouter.use('/auth', authRoute_1.authRoute);
 exports.apiRouter.use('/qr-flow', qrFlowRoute_1.qrFlowRoute);
 exports.apiRouter.use('/admin', adminRoute_1.adminRoute);
 exports.apiRouter.post('/qr/send-voice-reason', callTextController_1.sendVoiceReason);
-exports.apiRouter.get('/twilio/forward-call', callTextController_1.forwardCall);
+exports.apiRouter.post('/rtoapi', callTextController_1.sendRtoRequest);
+exports.apiRouter.post('/call-connect', callTextController_1.initiateCallConnect);

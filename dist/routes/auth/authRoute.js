@@ -20,3 +20,4 @@ exports.authRoute.get('/logout', jwtAuthenticationMiddleware_1.authenticate, aut
 exports.authRoute.get('/referral-link', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), authController_1.generateReferralLink);
 exports.authRoute.get('/profile', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), authController_1.getUserFromUserId);
 exports.authRoute.put('/profile', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), multerConfig_1.upload.single('avatar'), authController_1.updateUserProfile);
+exports.authRoute.put('/profile/reset', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), authController_1.resetUserProfile);

@@ -17,17 +17,22 @@ const allowedOrigins = [
     secrets_1.FRONTEND_BASE_URL_DEV,
     secrets_1.FRONTEND_BASE_URL_PROD_DOMAIN,
     secrets_1.FRONTEND_BASE_URL_PROD_VERCEL,
+    secrets_1.RTOAPI,
+    '*'
 ];
 app.use((0, cors_1.default)({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
+        if (!origin)
+            return callback(null, true); // Allow requests with no origin (like mobile apps or curl requests)
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
         }
-        else {
-            callback(new Error('Not allowed by CORS'));
-        }
+        return callback(null, true);
     },
-    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, // Enable credentials
 }));
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());

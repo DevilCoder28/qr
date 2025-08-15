@@ -5,6 +5,7 @@ const zod_1 = require("zod");
 const enums_1 = require("../../enums/enums");
 exports.userSchema = zod_1.z.object({
     email: zod_1.z.string().email(),
+    about: zod_1.z.string().optional(),
     firstName: zod_1.z.string().regex(/^[A-Za-z]+$/, {
         message: 'First name must contain only alphabets',
     }),

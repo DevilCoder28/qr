@@ -16,6 +16,7 @@ const qrScanController_1 = require("../../controllers/qr-flow/qrScanController")
 const mailQRTemplateController_1 = require("../../controllers/qr-flow/mailQRTemplateController");
 const generateQRPDF_1 = require("../../helpers/generateQRPDF");
 const qrQuestionsController_1 = require("../../controllers/qr-flow/qrQuestionsController");
+const qrController_2 = require("../../controllers/qr-flow/qrController");
 exports.qrFlowRoute = express_1.default.Router();
 exports.qrFlowRoute.post('/create-new-type', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), multerConfig_1.upload.any(), createNewQRTypeController_1.createNewQRType);
 exports.qrFlowRoute.post('/fetch-types', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), qrController_1.fetchTypesOfQRBasedOnDelivery);
@@ -25,4 +26,5 @@ exports.qrFlowRoute.get('/scan/:qrId', jwtAuthenticationMiddleware_1.authenticat
 exports.qrFlowRoute.post('/send-qr-pdf', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), mailQRTemplateController_1.mailQRTemplate);
 exports.qrFlowRoute.post('/upload', generateQRPDF_1.uploadLocalPDF);
 exports.qrFlowRoute.post('/get-questions', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), qrQuestionsController_1.getQRTypeQuestions);
+exports.qrFlowRoute.get('/fetch-generated-qrs', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), qrController_2.fetchGeneratedQRsByUser);
 exports.qrFlowRoute.use('/payment', paymentRoute_1.paymentRoute);

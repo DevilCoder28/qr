@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendVoiceReason = exports.sendTextReason = exports.forwardCall = void 0;
+exports.initiateCallConnect = exports.sendRtoRequest = exports.sendVoiceReason = exports.sendTextReason = exports.forwardCall = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const __1 = require("../..");
 const qrModel_1 = require("../../models/qr-flow/qrModel");
@@ -95,4 +95,85 @@ exports.sendVoiceReason = (0, express_async_handler_1.default)((req, res) => __a
         return (0, ApiResponse_1.ApiResponse)(res, 200, 'Masked voice call initiated successfully.', true, { sid: call.sid });
     }
     return (0, ApiResponse_1.ApiResponse)(res, 500, 'Failed to initiate call.', false, null);
+}));
+exports.sendRtoRequest = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { vehicalNo } = req.body;
+    if (!vehicalNo) {
+        res.status(400).json({ success: false, message: "vehicalNo is required." });
+        return;
+    }
+    try {
+        const apiRes = yield fetch("https://prod.apiclub.in/api/v1/rc_lite", {
+            method: "POST",
+            headers: {
+                'Authorization': `Bearer ${process.env.RTO_TOKEN}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ vehicalNo }),
+        });
+        if (!apiRes.ok) {
+            const errorData = yield apiRes.json();
+            res.status(apiRes.status).json(Object.assign({ success: false }, errorData));
+            return;
+        }
+        const data = yield apiRes.json();
+        res.status(200).json({ success: true, data });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: "RTO API error", error: String(error) });
+    }
+}));
+exports.initiateCallConnect = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { mobileNo, callerNo } = req.body;
+    const cloudPhone = process.env.CLOUD_PHONE || "";
+    if (!mobileNo) {
+        res.status(400).json({
+            success: false,
+            message: "mobileNo is required.",
+        });
+        return;
+    }
+    if (!cloudPhone) {
+        res.status(500).json({
+            success: false,
+            message: "Cloud phone number is not configured in environment variables.",
+        });
+        return;
+    }
+    const payload = {
+        to_number_1: callerNo,
+        to_number_2: mobileNo,
+        api_key: process.env.salessquared_api_key || "",
+        cloud_phone: cloudPhone,
+        calldet_callback_url: "https://www.google.com/",
+    };
+    try {
+        const response = yield fetch("https://api.salesquared.io/v2/call-connect", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+        const data = yield response.json();
+        if (data.errcode !== 0) {
+            res.status(400).json({
+                success: false,
+                message: data.errmsg || "Call connect API returned an error",
+                data,
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            message: "Call initiated successfully",
+            call_id: data.call_id,
+            data,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: String(error),
+        });
+    }
 }));

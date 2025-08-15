@@ -49,9 +49,12 @@ const userSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
-    // phoneNumber : {
-    //   type : String
-    // },
+    phoneNumber: {
+        type: String,
+    },
+    altMobileNumber: {
+        type: String,
+    },
     email: {
         type: String,
         required: true,
@@ -60,6 +63,10 @@ const userSchema = new mongoose_1.Schema({
     password: {
         type: String,
         required: true,
+    },
+    about: {
+        type: String,
+        default: 'hello, I am using QR Project',
     },
     roles: {
         type: [String],
@@ -82,6 +89,12 @@ const userSchema = new mongoose_1.Schema({
     resetPasswordTokenExpiry: {
         type: Date,
     },
+    vehicleNumber: {
+        type: String,
+    },
+    vehicleType: {
+        type: String,
+    },
     totalNumberOfQRsGenerated: {
         type: Number,
         default: 0
@@ -89,6 +102,10 @@ const userSchema = new mongoose_1.Schema({
     digitalWalletCoins: {
         type: Number,
         default: 0
+    },
+    deviceTokens: {
+        type: [String],
+        default: []
     }
 }, {
     timestamps: true,
