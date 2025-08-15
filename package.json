@@ -4,7 +4,7 @@
   "description": "A project built for Swifty9 by StageOverStash team.",
   "main": "./index.ts",
   "scripts": {
-    "build": "NODE_OPTIONS=--max-old-space-size=1024 tsc",
+    "build": "NODE_OPTIONS=--max-old-space-size=256 tsc",
     "start": "ts-node index.ts",
     "dev": "nodemon",
     "prestart": "npm run build",
