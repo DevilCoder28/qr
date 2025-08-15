@@ -492,6 +492,7 @@ export const getUserFromUserId = expressAsyncHandler(
       altMobileNumber: user.altMobileNumber || null,
       vehicleNumber: user.vehicleNumber || null,
       vehicleType: user.vehicleType || null,
+      deviceTokens: user.deviceTokens || [],
     };
 
     return ApiResponse(

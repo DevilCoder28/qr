@@ -13,6 +13,7 @@ export interface IUser {
   deviceTokens?: string[];
   about?: string;
   roles: UserRoles[];
+  devicetokens?: string[];
   isVerified: boolean;
   verificationToken?: string;
   verificationTokenExpiry?: Date;
