@@ -6,6 +6,7 @@ function initAdmin() {
   if (!process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
     throw new Error("FIREBASE_SERVICE_ACCOUNT_BASE64 is missing");
   }
+  console.log("FIREBASE_SERVICE_ACCOUNT_BASE64 length:", process.env.FIREBASE_SERVICE_ACCOUNT_BASE64?.length);
 
   const serviceAccount = JSON.parse(
     Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, "base64").toString("utf-8")

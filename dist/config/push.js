@@ -17,9 +17,12 @@ const firebase_admin_1 = __importDefault(require("firebase-admin"));
 function initAdmin() {
     if (firebase_admin_1.default.apps.length)
         return;
-    var serviceAccount = require("../../serviceAccountKey.json");
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+        throw new Error("FIREBASE_SERVICE_ACCOUNT_BASE64 is missing");
+    }
+    const serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, "base64").toString("utf-8"));
     firebase_admin_1.default.initializeApp({
-        credential: firebase_admin_1.default.credential.cert(serviceAccount)
+        credential: firebase_admin_1.default.credential.cert(serviceAccount),
     });
 }
 initAdmin();
