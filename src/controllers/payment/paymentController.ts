@@ -102,7 +102,7 @@ export const initiatePayment = expressAsyncHandler(
         return ApiResponse(res,200,'Payment initiated',true,ekqrResponse.data.payment_url,);
       } 
       else {
-        logger.error('eKQR API Error:', ekqrResponse.msg || 'Unknown error');
+        logger.error('eKQR API Error:', ekqrResponse);
         return ApiResponse(res,500,'Failed to initiate payment with eKQR',false,null,);
       }
     } catch (error: any) {
