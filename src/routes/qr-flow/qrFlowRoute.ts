@@ -57,12 +57,7 @@ qrFlowRoute.get(
   authorize([UserRoles.BASIC_USER]),
   scanQrHandler,
 );
-qrFlowRoute.post(
-  '/start-call/:qrId',
-  authenticate,
-  authorize([UserRoles.BASIC_USER]),
-  startCallHandler
-);
+qrFlowRoute.post('/start-call/:qrId', startCallHandler);
 
 qrFlowRoute.post(
   '/send-qr-pdf',
@@ -70,9 +65,13 @@ qrFlowRoute.post(
   authorize([UserRoles.BASIC_USER]),
   mailQRTemplate,
 );
+
 qrFlowRoute.post('/test', (req, res) => {
+  console.log('Test route hit');
   res.status(200).json({ message: 'Route is working' });
 });
+
+
 qrFlowRoute.post('/upload', uploadLocalPDF);
 
 qrFlowRoute.post(

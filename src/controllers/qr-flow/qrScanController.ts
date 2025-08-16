@@ -13,18 +13,19 @@ import { push } from '../../config/push';
 export const scanQrHandler = expressAsyncHandler(
   async (req: Request, res: Response) => {
     const { qrId } = req.params;
-    const { latitude, longitude } = req.body; // get from body
+    const { latitude, longitude } = req.query;
 
-    // Parse latitude and longitude as floats (if provided)
-    const lat = latitude !== undefined ? parseFloat(latitude) : null;
-    const long = longitude !== undefined ? parseFloat(longitude) : null;
+    const lat = latitude ? parseFloat(latitude as string) : null;
+    const long = longitude ? parseFloat(longitude as string) : null;
 
-    // Fetch QR info
+    // ✅ Fetch QR info
     const qr = await QRModel.findById(qrId)
       .populate({ path: 'createdBy', select: 'avatar' })
       .lean();
 
-    if (!qr) return ApiResponse(res, 404, 'QR Code not found', false, null);
+    if (!qr) {
+      return ApiResponse(res, 404, 'QR Code not found', false);
+    }
 
     let notificationSent = false;
 
@@ -37,13 +38,13 @@ export const scanQrHandler = expressAsyncHandler(
         const owner = await User.findById(ownerId).select('deviceTokens').lean();
         const tokens = owner?.deviceTokens || [];
 
-        if (tokens.length) {
+        if (tokens.length > 0) {
           await push.notifyMany(
             tokens,
-            'QR scanned',
+            'QR Scanned',
             `Your QR ${qr.serialNumber || ''} was scanned at ${lat}, ${long}`,
             {
-              qrId: String((qr as any)._id),
+              qrId: String(qr._id),
               serialNumber: qr.serialNumber || '',
               qrStatus: qr.qrStatus || '',
               vehicleNumber: qr.vehicleNumber || '',
@@ -56,7 +57,6 @@ export const scanQrHandler = expressAsyncHandler(
       }
     } catch (err) {
       console.error('Push notification error:', err);
-      notificationSent = false;
     }
 
     if (qr.qrStatus !== QRStatus.ACTIVE) {
@@ -94,57 +94,68 @@ export const scanQrHandler = expressAsyncHandler(
   }
 );
 
-
 /**
  * Handler to initiate a video call
  * Sends incoming call notification to driver with a unique roomId
  */
 export const startCallHandler = expressAsyncHandler(
   async (req: Request, res: Response) => {
+    console.log('startCallHandler invoked');
+    console.log('Request params:', req.params);
+    console.log('Request body:', req.body);
+
     const { qrId } = req.params;
     const { userName, roomId } = req.body;
 
-    console.log("✅ /start-call hit", req.body);
-
-    // Validate required fields
-    if (!qrId || !userName) {
-      return res.status(400).json({ message: 'qrId and userName are required' });
+    if (!qrId || !userName || !roomId) {
+      console.log('Missing parameters');
+      return ApiResponse(res, 400, 'qrId, userName and roomId are required', false);
     }
 
-    // Fetch QR info
+    // ✅ Fetch QR info
     const qr = await QRModel.findById(qrId)
-      .populate({ path: 'createdFor', select: 'deviceTokens' })
+      .populate({ path: 'createdFor', select: 'deviceTokens firstName lastName email' })
       .lean();
 
     if (!qr) {
-      return ApiResponse(res, 404, 'QR Code not found', false, null);
+      console.log('QR Code not found');
+      return ApiResponse(res, 404, 'QR Code not found', false);
     }
 
-    if (qr.qrStatus !== QRStatus.ACTIVE) {
-      return ApiResponse(res, 403, 'QR Code is not active', false, null);
-    }
-
-
-    let notificationSent = false;
-
+    // ✅ Send incoming call notification to the driver
     try {
-      const driver = qr.createdFor as any;
-      const tokens = driver?.deviceTokens || [];
+      const ownerId =
+        (qr as any).createdFor?.toString?.() ||
+        (qr as any).createdFor?._id?.toString?.();
 
-      if (tokens.length > 0) {
-        await push.notifyMany(
-          tokens,
-          'Incoming Video Call',
-          `${userName} wants to video call`,
-          { roomId, userName }
-        );
-        notificationSent = true;
+      if (ownerId) {
+        const owner = await User.findById(ownerId).select('deviceTokens').lean();
+        const tokens = owner?.deviceTokens || [];
+
+        if (tokens.length > 0) {
+          console.log('Sending push notification');
+          await push.notifyMany(
+            tokens,
+            'Incoming Call',
+            `You have an incoming call from ${userName}`,
+            {
+              qrId: String(qr._id),
+              serialNumber: qr.serialNumber || '',
+              roomId,
+              userName,
+            }
+          );
+        }
       }
     } catch (err) {
       console.error('Push notification error:', err);
-      notificationSent = false;
+      return ApiResponse(res, 500, 'Failed to send call notification', false);
     }
 
-    return ApiResponse(res, 200, 'Call initiated', true, { roomId, notificationSent });
+    console.log('Call initiated successfully');
+    return ApiResponse(res, 200, 'Call initiated successfully', true, {
+      roomId,
+      userName,
+    });
   }
 );

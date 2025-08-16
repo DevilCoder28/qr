@@ -24,9 +24,10 @@ exports.qrFlowRoute.post('/fetch-types', jwtAuthenticationMiddleware_1.authentic
 exports.qrFlowRoute.post('/check-validity', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), activateQRController_1.checkQRValidity);
 exports.qrFlowRoute.post('/update-qr', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), activateQRController_1.updateQRBySerialNumberHandler);
 exports.qrFlowRoute.get('/scan/:qrId', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), qrScanController_1.scanQrHandler);
-exports.qrFlowRoute.post('/start-call/:qrId', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), qrScanController_1.startCallHandler);
+exports.qrFlowRoute.post('/start-call/:qrId', qrScanController_2.startCallHandler);
 exports.qrFlowRoute.post('/send-qr-pdf', jwtAuthenticationMiddleware_1.authenticate, (0, jwtAuthenticationMiddleware_1.authorize)([enums_1.UserRoles.BASIC_USER]), mailQRTemplateController_1.mailQRTemplate);
 exports.qrFlowRoute.post('/test', (req, res) => {
+    console.log('Test route hit');
     res.status(200).json({ message: 'Route is working' });
 });
 exports.qrFlowRoute.post('/upload', generateQRPDF_1.uploadLocalPDF);

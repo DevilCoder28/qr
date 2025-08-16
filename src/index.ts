@@ -12,6 +12,8 @@ import { connectToDatabase } from './config/database';
 import logger from './config/logger';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import { qrFlowRoute } from './routes/qr-flow/qrFlowRoute';
+
 import twilio from 'twilio';
 
 
