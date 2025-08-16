@@ -1,90 +1,102 @@
-import express from 'express';
+import express from "express";
 import {
   authenticate,
   authorize,
-} from '../../middlewares/jwtAuthenticationMiddleware';
-import { UserRoles } from '../../enums/enums';
-import { upload } from '../../config/multerConfig';
-import { createNewQRType } from '../../controllers/qr-flow/createNewQRTypeController';
-import { fetchTypesOfQRBasedOnDelivery } from '../../controllers/qr-flow/qrController';
-import { paymentRoute } from './payment/paymentRoute';
-import { User } from '../../models/auth/user';
+} from "../../middlewares/jwtAuthenticationMiddleware";
+import { UserRoles } from "../../enums/enums";
+import { upload } from "../../config/multerConfig";
+import { createNewQRType } from "../../controllers/qr-flow/createNewQRTypeController";
+import { fetchTypesOfQRBasedOnDelivery, updateQRPermissionsByUserHandler } from "../../controllers/qr-flow/qrController";
+import { paymentRoute } from "./payment/paymentRoute";
+import { User } from "../../models/auth/user";
 import {
   checkQRValidity,
   updateQRBySerialNumberHandler,
-} from '../../controllers/qr-flow/activateQRController';
-import { scanQrHandler } from '../../controllers/qr-flow/qrScanController';
-import { mailQRTemplate } from '../../controllers/qr-flow/mailQRTemplateController';
-import { uploadLocalPDF } from '../../helpers/generateQRPDF';
-import { getQRTypeQuestions } from '../../controllers/qr-flow/qrQuestionsController';
-import { fetchGeneratedQRsByUser } from '../../controllers/qr-flow/qrController';
-import { startCallHandler } from '../../controllers/qr-flow/qrScanController';
+} from "../../controllers/qr-flow/activateQRController";
+import { scanQrHandler } from "../../controllers/qr-flow/qrScanController";
+import { mailQRTemplate } from "../../controllers/qr-flow/mailQRTemplateController";
+import { uploadLocalPDF } from "../../helpers/generateQRPDF";
+import { getQRTypeQuestions } from "../../controllers/qr-flow/qrQuestionsController";
+import { fetchGeneratedQRsByUser } from "../../controllers/qr-flow/qrController";
+import { startCallHandler } from "../../controllers/qr-flow/qrScanController";
 
 export const qrFlowRoute = express.Router();
 
 qrFlowRoute.post(
-  '/create-new-type',
+  "/create-new-type",
   authenticate,
   authorize([UserRoles.BASIC_USER]),
   upload.any(),
-  createNewQRType,
+  createNewQRType
 );
 
 qrFlowRoute.post(
-  '/fetch-types',
+  "/fetch-types",
   authenticate,
   authorize([UserRoles.BASIC_USER]),
-  fetchTypesOfQRBasedOnDelivery,
+  fetchTypesOfQRBasedOnDelivery
 );
 
 qrFlowRoute.post(
-  '/check-validity',
+  "/check-validity",
   authenticate,
   authorize([UserRoles.BASIC_USER]),
-  checkQRValidity,
+  checkQRValidity
 );
 
 qrFlowRoute.post(
-  '/update-qr',
+  "/update-qr",
   authenticate,
   authorize([UserRoles.BASIC_USER]),
-  updateQRBySerialNumberHandler,
+  updateQRBySerialNumberHandler
 );
 
 qrFlowRoute.get(
-  '/scan/:qrId',
+  "/scan/:qrId",
   authenticate,
   authorize([UserRoles.BASIC_USER]),
-  scanQrHandler,
+  scanQrHandler
 );
-qrFlowRoute.post('/start-call/:qrId', startCallHandler);
+qrFlowRoute.post(
+  "/start-call/:qrId",
+  authenticate,
+  authorize([UserRoles.BASIC_USER]),
+  startCallHandler
+);
 
 qrFlowRoute.post(
-  '/send-qr-pdf',
+  "/send-qr-pdf",
   authenticate,
   authorize([UserRoles.BASIC_USER]),
-  mailQRTemplate,
+  mailQRTemplate
 );
 
-qrFlowRoute.post('/test', (req, res) => {
-  console.log('Test route hit');
-  res.status(200).json({ message: 'Route is working' });
+// Bulk update permissions for all QRs of a user (createdFor)
+qrFlowRoute.post(
+  "/update-permissions-by-user",
+  authenticate,
+  authorize([UserRoles.BASIC_USER]),
+  updateQRPermissionsByUserHandler
+);
+
+qrFlowRoute.post("/test", (req, res) => {
+  console.log("Test route hit");
+  res.status(200).json({ message: "Route is working" });
 });
 
-
-qrFlowRoute.post('/upload', uploadLocalPDF);
+qrFlowRoute.post("/upload", uploadLocalPDF);
 
 qrFlowRoute.post(
-  '/get-questions',
+  "/get-questions",
   authenticate,
   authorize([UserRoles.BASIC_USER]),
-  getQRTypeQuestions,
+  getQRTypeQuestions
 );
 qrFlowRoute.get(
-  '/fetch-generated-qrs',
+  "/fetch-generated-qrs",
   authenticate,
   authorize([UserRoles.BASIC_USER]),
-  fetchGeneratedQRsByUser,
+  fetchGeneratedQRsByUser
 );
 
-qrFlowRoute.use('/payment', paymentRoute);
+qrFlowRoute.use("/payment", paymentRoute);

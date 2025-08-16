@@ -44,5 +44,15 @@ export const qrUpdateSchema = z.object({
   videoCallsAllowed: z.boolean().optional(),
 });
 
+
+// Minimal schema for updating permission flags across all QRs for a specific user (createdFor)
+export const qrPermissionsUpdateByUserSchema = z.object({
+  userId: objectIdSchema,
+  textMessagesAllowed: z.boolean().optional(),
+  voiceCallsAllowed: z.boolean().optional(),
+  videoCallsAllowed: z.boolean().optional(),
+});
+
 export type IQRSchema = z.infer<typeof qrSchema>;
 export type IQRUpdateSchema = z.infer<typeof qrUpdateSchema>;
+export type IQRPermissionsUpdateByUserSchema = z.infer<typeof qrPermissionsUpdateByUserSchema>;

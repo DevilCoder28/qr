@@ -12,7 +12,11 @@ import { ApiResponse } from '../config/ApiResponse';
 
 export const authenticate = expressAsyncHandler(
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const token = req.cookies?.token;
+    const token =
+      req.cookies?.token ||
+      (req.headers?.authorization?.startsWith('Bearer ')
+        ? req.headers.authorization.slice(7)
+        : undefined);
 
     if (!token) {
       return ApiResponse(

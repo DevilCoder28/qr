@@ -97,32 +97,102 @@ export const scanQrHandler = expressAsyncHandler(
 /**
  * Handler to initiate a video call
  * Sends incoming call notification to driver with a unique roomId
- */
+//  */
+// export const startCallHandler = expressAsyncHandler(
+//   async (req: Request, res: Response) => {
+//     console.log('startCallHandler invoked');
+//     console.log('Request params:', req.params);
+//     console.log('Request body:', req.body);
+
+//     const { qrId } = req.params;
+//     const { userName, roomId } = req.body;
+
+//     if (!qrId || !userName || !roomId) {
+//       console.log('Missing parameters');
+//       return ApiResponse(res, 400, 'qrId, userName and roomId are required', false);
+//     }
+
+//     // ✅ Fetch QR info
+//     const qr = await QRModel.findById(qrId)
+//       .populate({ path: 'createdFor', select: 'deviceTokens firstName lastName email' })
+//       .lean();
+
+//     if (!qr) {
+//       console.log('QR Code not found');
+//       return ApiResponse(res, 404, 'QR Code not found', false);
+//     }
+
+//     // ✅ Send incoming call notification to the driver
+//     try {
+//       const ownerId =
+//         (qr as any).createdFor?.toString?.() ||
+//         (qr as any).createdFor?._id?.toString?.();
+
+//       if (ownerId) {
+//         const owner = await User.findById(ownerId).select('deviceTokens').lean();
+//         const tokens = owner?.deviceTokens || [];
+
+//         if (tokens.length > 0) {
+//           console.log('Sending push notification');
+//           await push.notifyMany(
+//             tokens,
+//             'Incoming Call',
+//             `You have an incoming call from ${userName}`,
+//             {
+//               qrId: String(qr._id),
+//               serialNumber: qr.serialNumber || '',
+//               roomId,
+//               userName,
+//             }
+//           );
+//         }
+//       }
+//     } catch (err) {
+//       console.error('Push notification error:', err);
+//       return ApiResponse(res, 500, 'Failed to send call notification', false);
+//     }
+
+//     console.log('Call initiated successfully');
+//     return ApiResponse(res, 200, 'Call initiated successfully', true, {
+//       roomId,
+//       userName,
+//     });
+//   }
+// );
+
 export const startCallHandler = expressAsyncHandler(
   async (req: Request, res: Response) => {
-    console.log('startCallHandler invoked');
-    console.log('Request params:', req.params);
-    console.log('Request body:', req.body);
-
     const { qrId } = req.params;
-    const { userName, roomId } = req.body;
+    const { userName, roomId } = req.body as {
+      userName?: string;
+      roomId?: string;
+    };
 
     if (!qrId || !userName || !roomId) {
-      console.log('Missing parameters');
-      return ApiResponse(res, 400, 'qrId, userName and roomId are required', false);
+      return ApiResponse(
+        res,
+        400,
+        'qrId, userName and roomId are required',
+        false,
+      );
     }
 
-    // ✅ Fetch QR info
     const qr = await QRModel.findById(qrId)
-      .populate({ path: 'createdFor', select: 'deviceTokens firstName lastName email' })
+      .populate({
+        path: 'createdFor',
+        select: 'deviceTokens firstName lastName email',
+      })
       .lean();
 
     if (!qr) {
-      console.log('QR Code not found');
       return ApiResponse(res, 404, 'QR Code not found', false);
     }
 
-    // ✅ Send incoming call notification to the driver
+    // Enforce video call permissions
+    if (!(qr as any).videoCallsAllowed) {
+      return ApiResponse(res, 403, 'Video calls are disabled for this QR', false);
+    }
+
     try {
       const ownerId =
         (qr as any).createdFor?.toString?.() ||
@@ -133,17 +203,16 @@ export const startCallHandler = expressAsyncHandler(
         const tokens = owner?.deviceTokens || [];
 
         if (tokens.length > 0) {
-          console.log('Sending push notification');
           await push.notifyMany(
             tokens,
             'Incoming Call',
             `You have an incoming call from ${userName}`,
             {
-              qrId: String(qr._id),
-              serialNumber: qr.serialNumber || '',
+              qrId: String((qr as any)._id),
+              serialNumber: (qr as any).serialNumber || '',
               roomId,
               userName,
-            }
+            },
           );
         }
       }
@@ -152,10 +221,9 @@ export const startCallHandler = expressAsyncHandler(
       return ApiResponse(res, 500, 'Failed to send call notification', false);
     }
 
-    console.log('Call initiated successfully');
     return ApiResponse(res, 200, 'Call initiated successfully', true, {
       roomId,
       userName,
     });
-  }
+  },
 );
