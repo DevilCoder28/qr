@@ -19,8 +19,11 @@ const userPayloadSchema_1 = require("../validators/auth/userPayloadSchema");
 const jwtHelper_1 = require("../utils/jwtHelper");
 const ApiResponse_1 = require("../config/ApiResponse");
 exports.authenticate = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.token;
+    var _a, _b, _c;
+    const token = ((_a = req.cookies) === null || _a === void 0 ? void 0 : _a.token) ||
+        (((_c = (_b = req.headers) === null || _b === void 0 ? void 0 : _b.authorization) === null || _c === void 0 ? void 0 : _c.startsWith('Bearer '))
+            ? req.headers.authorization.slice(7)
+            : undefined);
     if (!token) {
         return (0, ApiResponse_1.ApiResponse)(res, 401, 'Unauthenticated', false, null, 'Authentication Error');
     }

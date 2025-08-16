@@ -25,7 +25,7 @@ const user_1 = require("../../models/auth/user");
 const mongoose_1 = __importDefault(require("mongoose"));
 const logger_1 = __importDefault(require("../../config/logger"));
 exports.initiatePayment = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     let { items, createdFor, shippingAddress = {}, deliveryType } = req.body;
     console.log("Items : ", items);
     const createdBy = (_a = req.data) === null || _a === void 0 ? void 0 : _a.userId;
@@ -81,13 +81,14 @@ exports.initiatePayment = (0, express_async_handler_1.default)((req, res) => __a
             return (0, ApiResponse_1.ApiResponse)(res, 200, 'Payment initiated', true, ekqrResponse.data.payment_url);
         }
         else {
-            logger_1.default.error('eKQR API Error:', ekqrResponse.msg || 'Unknown error');
-            return (0, ApiResponse_1.ApiResponse)(res, 500, 'Failed to initiate payment with eKQR', false, null);
+            logger_1.default.error('eKQR API Error:', ekqrResponse); // log full object
+            return (0, ApiResponse_1.ApiResponse)(res, 500, 'Failed to initiate payment with eKQR', false, null, (ekqrResponse === null || ekqrResponse === void 0 ? void 0 : ekqrResponse.msg) || JSON.stringify(ekqrResponse));
         }
     }
     catch (error) {
-        logger_1.default.error('Error initiating eKQR payment:', error.message);
-        return (0, ApiResponse_1.ApiResponse)(res, 500, 'Payment initiation failed', false, null);
+        const errPayload = ((_f = error === null || error === void 0 ? void 0 : error.response) === null || _f === void 0 ? void 0 : _f.data) || (error === null || error === void 0 ? void 0 : error.message) || 'Unknown error';
+        logger_1.default.error('Error initiating eKQR payment:', errPayload);
+        return (0, ApiResponse_1.ApiResponse)(res, 500, 'Payment initiation failed', false, null, typeof errPayload === 'string' ? errPayload : JSON.stringify(errPayload));
     }
 }));
 exports.paymentCallBackHandler = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
