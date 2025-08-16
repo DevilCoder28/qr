@@ -102,12 +102,13 @@ export const initiatePayment = expressAsyncHandler(
         return ApiResponse(res,200,'Payment initiated',true,ekqrResponse.data.payment_url,);
       } 
       else {
-        logger.error('eKQR API Error:', ekqrResponse);
-        return ApiResponse(res,500,'Failed to initiate payment with eKQR',false,null,);
+        logger.error('eKQR API Error:', ekqrResponse); // log full object
+        return ApiResponse(res, 500, 'Failed to initiate payment with eKQR', false, null, ekqrResponse?.msg || JSON.stringify(ekqrResponse));
       }
     } catch (error: any) {
-      logger.error('Error initiating eKQR payment:', error.message);
-      return ApiResponse(res, 500, 'Payment initiation failed', false, null);
+      const errPayload = error?.response?.data || error?.message || 'Unknown error';
+      logger.error('Error initiating eKQR payment:', errPayload);
+      return ApiResponse(res, 500, 'Payment initiation failed', false, null, typeof errPayload === 'string' ? errPayload : JSON.stringify(errPayload));
     }
   },
 );
