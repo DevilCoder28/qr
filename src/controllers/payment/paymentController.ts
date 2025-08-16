@@ -61,9 +61,8 @@ export const initiatePayment = expressAsyncHandler(
       status: PaymentTransactionStatus.INITIATED,
     });
 
-    const backendUrl = NODE_ENV === 'dev' ? BACKEND_BASE_URL : BACKEND_PROD_URL;
-    
-    // const backendUrl = "https://8025-2402-3a80-15b5-f30b-299a-58ad-c1c0-c74.ngrok-free.app";
+    // const backendUrl = NODE_ENV === 'dev' ? BACKEND_BASE_URL : BACKEND_PROD_URL;
+    const backendUrl = "https://digipahchan-qr.onrender.com";
     const redirectUrl = `${backendUrl}/api/qr-flow/payment/verify-payment`;
 
     console.log('Backend Base URL : ', backendUrl);
